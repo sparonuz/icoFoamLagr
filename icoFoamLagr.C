@@ -104,93 +104,14 @@ int main(int argc, char *argv[])
         cloudVolSUSu.correctBoundaryConditions();
         cloudSU.source() = vector::zero;
 
-        // correct UEqn taking into account particles
-        fvVectorMatrix UEqn
-        (
-            fvm::ddt(U)
-          + fvm::div(phi, U)
-          - fvm::laplacian(nu, U) == (1.0/rhoc)*cloudSU
-        );
+        #include "UEqn.H"
 
-        UEqn.relax();
-
-        volScalarField rAUc(1.0/UEqn.A());
-        surfaceScalarField rAUcf("Dp", fvc::interpolate(rAUc));
-
-        surfaceScalarField phicForces
-            (
-           (fvc::interpolate(rAUc*cloudVolSUSu/rhoc) & mesh.Sf())
-         + rAUcf*(g & mesh.Sf())
-        );
-
-        Info<< "Writing U matrix " << endl;
-        if (piso.momentumPredictor())
-        {
-            Info<< "Solving U Eqn " << endl;
-            solve
-            (
-               UEqn 
-            == 
-               fvc::reconstruct
-               (
-                    phicForces/rAUcf - fvc::snGrad(p)*mesh.magSf()
-               )
-           );
-        }
-
-         Info<< "Entering PISO loop " << endl;
         // --- PISO loop
         while (piso.correct())
         {
-            volScalarField rAU(1.0/UEqn.A());
-            surfaceScalarField rAUf("Dp", fvc::interpolate(rAU));
-            //momentum solution without pressure gradient
-            volVectorField HbyA("HbyA", U);
-            HbyA = rAU*UEqn.H();
-            // HbyA flux, corrected to be globally conservative and 
-            // ensure a solution for peqn
-            surfaceScalarField phiHbyA
-            (
-                "phiHbyA",
-                (fvc::interpolate(HbyA) & mesh.Sf())
-              + fvc::interpolate(rAU)*fvc::ddtCorr(U, phi)
-            );
-//            adjustPhi(phiHbyA, U, p);
-            // Update the fixedFluxPressure BCs to ensure flux consistency
-            setSnGrad<fixedFluxPressureFvPatchScalarField>
-            (
-                p.boundaryField(),
-                (
-                    phiHbyA.boundaryField()
-                    - (mesh.Sf().boundaryField() & U.boundaryField())
-                )/(mesh.magSf().boundaryField()*rAUf.boundaryField())
-            );
+            #include "pEqn.H"
 
-
-            // Non-orthogonal pressure corrector loop
-            while (piso.correctNonOrthogonal())
-            {
-                // Pressure corrector
-                Info<< "Writing P matrix " << endl;
-                fvScalarMatrix pEqn
-                (
-                    fvm::laplacian(rAU, p) == fvc::div(phiHbyA)
-                );
-
-                pEqn.setReference(pRefCell, pRefValue);
-
-                Info<< "SOlving P Equation " << endl;
-                pEqn.solve(mesh.solver(p.select(piso.finalInnerIter())));
-
-                if (piso.finalNonOrthogonalIter())
-                {
-                    phi = phiHbyA - pEqn.flux();
-                }
-            }
-
-            #include "continuityErrs.H"
-            //Correct the approximate velocity field 
-            //using the corrected pressure gradient
+            //Correct the approximate velocity field using the corrected pressure gradient
             U = HbyA - rAU*fvc::grad(p);
             U.correctBoundaryConditions();
         }
