@@ -23,7 +23,6 @@ setSnGrad<fixedFluxPressureFvPatchScalarField>
         - (mesh.Sf().boundaryField() & U.boundaryField())
     )/(mesh.magSf().boundaryField()*rAUf.boundaryField())
 );
-
 // Non-orthogonal pressure corrector loop  
 while (piso.correctNonOrthogonal())
 {
