@@ -28,7 +28,6 @@ Description
     Transient solver for incompressible, laminar flow of Newtonian fluids.
 
 \*---------------------------------------------------------------------------*/
-
 #include "fvCFD.H"
 #include "singlePhaseTransportModel.H"
 #include "pisoControl.H"
@@ -112,8 +111,8 @@ int main(int argc, char *argv[])
             #include "pEqn.H"
 
             //Correct the approximate velocity field using the corrected pressure gradient
-            U = HbyA - rAU*fvc::grad(p);
-            U.correctBoundaryConditions();
+            //U = HbyA - rAU*fvc::grad(p);
+            //U.correctBoundaryConditions();
         }
 
         runTime.write();

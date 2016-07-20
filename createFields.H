@@ -1,17 +1,4 @@
 Info<< "Reading transportProperties\n" << endl;
-/**
-IOdictionary transportProperties
-(
-    IOobject
-    (
-        "transportProperties",
-        runTime.constant(),
-        mesh,
-        IOobject::MUST_READ_IF_MODIFIED,
-        IOobject::NO_WRITE
-    )
-);
-*/
 
 word continuousPhaseName
 (
@@ -57,7 +44,20 @@ volVectorField U
     mesh
 );
 
-#include "createPhi.H"
+//#include "createPhi.H"
+
+surfaceScalarField phi
+(
+    IOobject
+    (
+        IOobject::groupName("phi",continuousPhaseName),
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    linearInterpolate(U) & mesh.Sf()
+);
 
 
 label pRefCell = 0;
@@ -175,6 +175,7 @@ scalar alphacMin
 );
 
 // Update alphac from the particle locations
- alphac = max(1.0 - kinematicCloud.theta(), alphacMin);
- alphac.correctBoundaryConditions();
+// alphac = max(1.0 - kinematicCloud.theta(), alphacMin);
+alphac = 1.0;
+alphac.correctBoundaryConditions();
 

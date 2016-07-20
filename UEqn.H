@@ -9,7 +9,7 @@ fvVectorMatrix UEqn
 
 UEqn.relax();
 
-volScalarFielid rAU(1.0/UEqn.A());
+volScalarField rAU(1.0/UEqn.A());
 surfaceScalarField rAUf("Dp", fvc::interpolate(rAU));
 
 surfaceScalarField phicForces
