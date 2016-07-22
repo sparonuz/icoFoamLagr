@@ -1,21 +1,19 @@
 {
   //momentum solution without pressure gradient
-  volVectorField HbyA("HbyA", U);
-  HbyA = rAU*UEqn.H();
-  
+  volVectorField HbyA(constrainHbyA(rAU*UEqn.H(), U, p));
+
   // HbyA flux, corrected to be globally conservative and 
   // ensure a solution for peqn
   surfaceScalarField phiHbyA
   (
       "phiHbyA",
-      (
-          (fvc::interpolate(HbyA) & mesh.Sf())
-        + fvc::interpolate(rAU)*fvc::ddtCorr(U, phi)
-      )
+       fvc::flux(HbyA)
+     + fvc::interpolate(rAU)*fvc::ddtCorr(U, phi)
   );
   
   // Update the fixedFluxPressure BCs to ensure flux consistency
   constrainPressure(p, U, phiHbyA, rAUf); 
+
   // Non-orthogonal pressure corrector loop  
   while (piso.correctNonOrthogonal())
   {
