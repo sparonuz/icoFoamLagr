@@ -1,18 +1,16 @@
 #include "readGravitationalAcceleration.H"
-word continuousPhaseName
-(
-    IOdictionary
-    (
-        IOobject
-        (
-            "transportProperties",
-            runTime.constant(),
-            mesh,
-            IOobject::MUST_READ
-        )
-    ).lookup("continuousPhaseName")
-);
 
+IOdictionary transportProperties
+(
+    IOobject
+    (
+        "transportProperties",
+        runTime.constant(),
+        mesh,
+        IOobject::MUST_READ_IF_MODIFIED,
+        IOobject::NO_WRITE
+    )
+);
 
 Info<< "Reading field p\n" << endl;
 volScalarField p
@@ -34,7 +32,7 @@ volVectorField U
 (
     IOobject
     (
-        IOobject::groupName("U", continuousPhaseName),
+        "U",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -43,13 +41,11 @@ volVectorField U
     mesh
 );
 
-//#include "createPhi.H"
-
 surfaceScalarField phi
 (
     IOobject
     (
-        IOobject::groupName("phi",continuousPhaseName),
+        "phi",
         runTime.timeName(),
         mesh,
         IOobject::READ_IF_PRESENT,
@@ -64,28 +60,18 @@ scalar pRefValue = 0.0;
 setRefCell(p, mesh.solutionDict().subDict("PISO"), pRefCell, pRefValue);
 mesh.setFluxRequired(p.name());
 
-Info<< "Creating turbulence model\n" << endl;
-
-singlePhaseTransportModel continuousPhaseTransport(U, phi);
-
 dimensionedScalar nu
 (
     "nu",
     dimViscosity,
-    continuousPhaseTransport.lookup
-    (
-       "nu"
-    )
+    transportProperties.lookup("nu")
 );
 
 dimensionedScalar rhocValue
 (
-    IOobject::groupName("rho", continuousPhaseName),
+    "rho",
     dimDensity,
-    continuousPhaseTransport.lookup
-    (
-        IOobject::groupName("rho", continuousPhaseName)
-    )
+    transportProperties.lookup("rho")
 );
 
 
@@ -107,7 +93,7 @@ volScalarField muc
 (
     IOobject
     (
-        IOobject::groupName("mu", continuousPhaseName),
+        "mu",
         runTime.timeName(),
         mesh,
         IOobject::NO_READ,
@@ -118,14 +104,14 @@ volScalarField muc
 );
 
 Info << "Creating field alphac\n" << endl;
+
 // alphac must be constructed before the cloud
 // so that the drag-models can find it
-
 volScalarField alphac
 (
     IOobject
     (
-        IOobject::groupName("alpha", continuousPhaseName),
+        "alpha",
         runTime.timeName(),
         mesh,
         IOobject::READ_IF_PRESENT,

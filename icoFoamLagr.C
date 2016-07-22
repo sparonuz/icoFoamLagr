@@ -29,7 +29,6 @@ Description
 
 \*---------------------------------------------------------------------------*/
 #include "fvCFD.H"
-#include "singlePhaseTransportModel.H"
 #include "pisoControl.H"
 #ifdef MPPIC
     #include "basicKinematicMPPICCloud.H"
@@ -73,9 +72,7 @@ int main(int argc, char *argv[])
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         //include presence of cloud of particles, and evolve
-        continuousPhaseTransport.correct();
-        muc = rhoc*continuousPhaseTransport.nu();
-
+        muc = rhoc*nu;
         Info<< "Evolving " << kinematicCloud.name() << endl;
         kinematicCloud.evolve();
 
