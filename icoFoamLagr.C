@@ -31,7 +31,6 @@ Description
 #include "fvCFD.H"
 #include "singlePhaseTransportModel.H"
 #include "pisoControl.H"
-#include "fixedFluxPressureFvPatchScalarField.H"
 #ifdef MPPIC
     #include "basicKinematicMPPICCloud.H"
     #define basicKinematicTypeCloud basicKinematicMPPICCloud
@@ -55,7 +54,7 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
 
-    pisoControl piso(mesh);
+    #include "createControl.H"
 
     #include "createTimeControls.H"
     #include "createFields.H"
@@ -94,14 +93,14 @@ int main(int argc, char *argv[])
             (
                 "0",
                 cloudSU.dimensions()/dimVolume,
-                vector::zero
+                Zero
             ),
             zeroGradientFvPatchVectorField::typeName
         );
 
-        cloudVolSUSu.internalField() = -cloudSU.source()/mesh.V();
+        cloudVolSUSu.primitiveFieldRef() = -cloudSU.source()/mesh.V();
         cloudVolSUSu.correctBoundaryConditions();
-        cloudSU.source() = vector::zero;
+        cloudSU.source() = Zero;
 
         #include "UEqn.H"
 

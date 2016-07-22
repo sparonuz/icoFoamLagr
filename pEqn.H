@@ -15,15 +15,7 @@
   );
   
   // Update the fixedFluxPressure BCs to ensure flux consistency
-  setSnGrad<fixedFluxPressureFvPatchScalarField>
-  (
-      p.boundaryField(),
-      (
-          phiHbyA.boundaryField()
-          - (mesh.Sf().boundaryField() & U.boundaryField())
-      )/(mesh.magSf().boundaryField()*rAUf.boundaryField())
-  );
-  
+  constrainPressure(p, U, phiHbyA, rAUf); 
   // Non-orthogonal pressure corrector loop  
   while (piso.correctNonOrthogonal())
   {

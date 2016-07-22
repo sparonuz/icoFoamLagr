@@ -1,5 +1,4 @@
-Info<< "Reading transportProperties\n" << endl;
-
+#include "readGravitationalAcceleration.H"
 word continuousPhaseName
 (
     IOdictionary
@@ -68,20 +67,6 @@ mesh.setFluxRequired(p.name());
 Info<< "Creating turbulence model\n" << endl;
 
 singlePhaseTransportModel continuousPhaseTransport(U, phi);
-
-Info<< "\nReading g\n" << endl;
-
-uniformDimensionedVectorField g
-(
-    IOobject
-    (
-        "g",
-        runTime.constant(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::NO_WRITE
-    )
-);
 
 dimensionedScalar nu
 (
