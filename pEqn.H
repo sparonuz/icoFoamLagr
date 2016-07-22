@@ -35,11 +35,10 @@
       {
           phi = phiHbyA - pEqn.flux();
           p.relax();
-  //        U = HbyA - rAU*fvc::grad(p);
-  //        U.correctBoundaryConditions();
   
       }
   }
+        //Correct the approximate velocity field using the corrected pressure gradient
         U = HbyA - rAU*fvc::grad(p);
         U.correctBoundaryConditions();
 }

@@ -108,10 +108,6 @@ int main(int argc, char *argv[])
         while (piso.correct())
         {
             #include "pEqn.H"
-
-            //Correct the approximate velocity field using the corrected pressure gradient
-            //U = HbyA - rAU*fvc::grad(p);
-            //U.correctBoundaryConditions();
         }
 
         runTime.write();
