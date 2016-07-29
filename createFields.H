@@ -1,18 +1,19 @@
 #include "readGravitationalAcceleration.H"
 
-IOdictionary transportProperties
+word continuousPhaseName
 (
-    IOobject
+    IOdictionary
     (
-        "transportProperties",
-        runTime.constant(),
-        mesh,
-        IOobject::MUST_READ_IF_MODIFIED,
-        IOobject::NO_WRITE
-    )
+        IOobject
+        (
+            "transportProperties",
+            runTime.constant(),
+            mesh,
+            IOobject::MUST_READ
+        )
+    ).lookup("continuousPhaseName")
 );
 
-Info<< "Reading field p\n" << endl;
 volScalarField p
 (
     IOobject
@@ -32,7 +33,7 @@ volVectorField U
 (
     IOobject
     (
-        "U",
+	IOobject::groupName("U", continuousPhaseName),
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -45,7 +46,7 @@ surfaceScalarField phi
 (
     IOobject
     (
-        "phi",
+	IOobject::groupName("phi",continuousPhaseName),
         runTime.timeName(),
         mesh,
         IOobject::READ_IF_PRESENT,
@@ -60,18 +61,22 @@ scalar pRefValue = 0.0;
 setRefCell(p, mesh.solutionDict().subDict("PISO"), pRefCell, pRefValue);
 mesh.setFluxRequired(p.name());
 
+Info<< "Creating turbulence model\n" << endl;
+
+singlePhaseTransportModel continuousPhaseTransport(U, phi);
+
 dimensionedScalar nu
 (
     "nu",
     dimViscosity,
-    transportProperties.lookup("nu")
+     continuousPhaseTransport.lookup("nu")
 );
 
 dimensionedScalar rhocValue
 (
-    "rho",
+    IOobject::groupName("rho", continuousPhaseName),
     dimDensity,
-    transportProperties.lookup("rho")
+    continuousPhaseTransport.lookup(IOobject::groupName("rho", continuousPhaseName))
 );
 
 
@@ -93,7 +98,7 @@ volScalarField muc
 (
     IOobject
     (
-        "mu",
+        IOobject::groupName("mu", continuousPhaseName),
         runTime.timeName(),
         mesh,
         IOobject::NO_READ,
@@ -111,7 +116,7 @@ volScalarField alphac
 (
     IOobject
     (
-        "alpha",
+	IOobject::groupName("alpha", continuousPhaseName),
         runTime.timeName(),
         mesh,
         IOobject::READ_IF_PRESENT,
